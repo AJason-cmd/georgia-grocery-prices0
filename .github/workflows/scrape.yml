@@ -1,6 +1,43 @@
-- name: Commit prices.xlsx
+name: Daily Price Scraper
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Run scraper
+        run: python scraper.py
+
+      - name: Save debug screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-${{ github.run_id }}
+          path: debug/
+          if-no-files-found: ignore
+
+      - name: Commit prices.xlsx
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f prices.xlsx || echo "No xlsx to commit"
-          git diff --staged --quiet || git commit -m "prices $(date +'%Y-%m-%d')" && git push || echo "Nothing to push"
+          git add prices.xlsx
+          git diff --staged --quiet || git commit -m "prices $(date +'%Y-%m-%d')" && git push

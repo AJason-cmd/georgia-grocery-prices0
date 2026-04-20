@@ -73,4 +73,4 @@ async def scrape(page, store_name, url_tpl, item_name, item_q):
         if rows:
             print(f"  OK — {len(rows)} prices found")
         else:
-            print(f"  No prices found — check debu
+            print(f"  No prices found - check debug/{store_name}_{item_name}.png")
